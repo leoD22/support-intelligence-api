@@ -39,3 +39,42 @@ Con el entorno virtual activado:
 ```bash
 uvicorn app.main:app --reload
 ```
+## Uso de la API
+
+### Documentación interactiva
+
+Con el servidor en ejecución se puede acceder  `/docs`, donde FastAPI muestra la documentación de los endpoints y los schemas de entrada y salida.
+
+### POST /classify 
+
+Recibe un body JSON con el campo `text` y devuelve una respuesta JSON con la clasificación del ticket.
+
+
+#### Request body
+```json
+{
+  "text": "Factura de compra de equipo para la oficina"
+}
+```
+	
+#### Response body
+```json
+{
+  "category": "billing",
+  "priority": 1,
+  "summary": "Factura de compra de equipo para la oficina",
+  "entities": [
+    "factura"
+  ]
+}
+```
+
+## Limitaciones
+
+- La clasificación utiliza actualmente palabras clave asociadas a las entidades. En versiones futuras, esta responsabilidad se irá reemplazando mediante tecnologías de inteligencia artificial a medida que sean incorporadas al proyecto.
+
+- `summary` actualmente devuelve el texto de entrada, no un resumen real.
+
+- `entities` solo detecta una lista fija de palabras.
+
+- La validación avanzada de entrada queda pendiente para una versión futura.
