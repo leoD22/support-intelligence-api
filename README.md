@@ -1,53 +1,54 @@
 # Support Intelligence API
 
-API para clasificación y procesamiento de tickets de soporte.
+API for classifying and processing support tickets.
 
-Esta API utiliza FastAPI y reglas simples para clasificar tickets. Como respuesta devuelve los campos `category`, `priority`, `summary` y `entities`.
+This API uses FastAPI and simple rules to classify tickets. The response returns the fields `category`, `priority`, `summary`, and `entities`.
 
-## Tecnologías
+## Technologies
 
-- FastAPI: creación de los endpoints de la API.
-- Pydantic: definición y validación básica de los contratos de entrada y salida.
-- Uvicorn: servidor ASGI para ejecutar la aplicación.
+- FastAPI: building the API endpoints.
+- Pydantic: definition and basic validation of input and output schemas.
+- Uvicorn: ASGI server used to run the application.
 
-## Cómo ejecutar el proyecto
+## How to run the project
 
-### Primera instalación
+### First-time setup
 
-Crear un entorno virtual en la carpeta del proyecto:
+Create a virtual environment in the project folder:
 
 ```bash
 python -m venv .venv
 ```
 
-Activar el entorno virtual:
+Activate the virtual environment:
 
 ```bash
 source .venv/Scripts/activate
 ```
 
-Instalar las dependencias necesarias:
+Install the required dependencies:
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-### Ejecutar la API
+### Run the API
 
-Con el entorno virtual activado:
+With the virtual environment activated:
 
 ```bash
 uvicorn app.main:app --reload
 ```
-## Uso de la API
 
-### Documentación interactiva
+## Using the API
 
-Con el servidor en ejecución se puede acceder  `/docs`, donde FastAPI muestra la documentación de los endpoints y los schemas de entrada y salida.
+### Interactive documentation
 
-### POST /classify 
+With the server running, you can access `/docs`, where FastAPI displays the endpoint documentation and the input/output schemas.
 
-Recibe un body JSON con el campo `text` y devuelve una respuesta JSON con la clasificación del ticket.
+### POST/classify 
+
+Receives a JSON body with the `text` field and returns a JSON response with the ticket classification.
 
 
 #### Request body
@@ -69,12 +70,14 @@ Recibe un body JSON con el campo `text` y devuelve una respuesta JSON con la cla
 }
 ```
 
-## Limitaciones
+## Limitations
 
-- La clasificación utiliza actualmente palabras clave asociadas a las entidades. En versiones futuras, esta responsabilidad se irá reemplazando mediante tecnologías de inteligencia artificial a medida que sean incorporadas al proyecto.
+- Classification currently relies on simple keyword-based rules. In future versions, the rule-based classifier will gradually be replaced by AI-based classification.
 
-- `summary` actualmente devuelve el texto de entrada, no un resumen real.
+- `summary` currently returns the input text, not an actual summary.
 
-- `entities` solo detecta una lista fija de palabras.
+- `entities` only detects a fixed list of words.
 
-- La validación avanzada de entrada queda pendiente para una versión futura.
+- Advanced input validation is left for a future version.
+
+- The current keyword rules are primarily based on Spanish terms.
