@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class TicketRequest(BaseModel):
-    text: str 
+    text: str
 
 
 class TicketResponse(BaseModel):
@@ -10,5 +10,3 @@ class TicketResponse(BaseModel):
     priority: int
     summary: str
     entities: list[str]
-
-
