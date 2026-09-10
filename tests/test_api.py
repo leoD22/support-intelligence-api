@@ -1,10 +1,14 @@
 from fastapi.testclient import TestClient
 from app.main import app
+import pytest
 
-client = TestClient(app)
+
+@pytest.fixture
+def client():
+    return TestClient(app)
 
 
-def test_classify_normal():
+def test_classify_normal(client):
     response = client.post(
         "/classify",
         json={
@@ -24,6 +28,6 @@ def test_classify_normal():
     assert response.json() == expected_response
 
 
-def test_classify_missing_text():
+def test_classify_missing_text(client):
     response = client.post("/classify", json={})
     assert response.status_code == 422
