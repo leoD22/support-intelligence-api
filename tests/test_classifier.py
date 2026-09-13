@@ -43,3 +43,17 @@ def test_classify_ticket():
     }
 
     assert classify_ticket(example_text) == expected_output
+
+
+def test_classify_ticket_upper_text():
+    example_text = 'THE CLIENT DETECT A EXTRA CHARGE'
+    expected_output = {
+        "category": "billing",
+        "priority": 1,
+        "summary": "THE CLIENT DETECT A EXTRA CHARGE",
+        "entities": [
+            "charge"
+        ]
+    }
+
+    assert classify_ticket(example_text) == expected_output
