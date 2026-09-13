@@ -11,6 +11,7 @@ This API uses FastAPI and simple keyword-based rules to classify tickets. The re
 - Uvicorn: ASGI server used to run the application.
 - pytest: automated testing of classifier logic and API behavior.
 - FastAPI TestClient: testing the `/classify` endpoint without running the server manually.
+- GitHub Actions: continuous integration that runs the test suite on pushes and pull requests.
 
 ## How to run the project
 
@@ -82,11 +83,14 @@ With the virtual environment activated, run the test suite with:
 python -m pytest
 ```
 
+The test suite is also executed automatically by GitHub Actions on every push and pull request.
+
 The current test suite covers:
 
 - `technical`, `billing`, and `general` category classification.
 - Multiple and empty entity extraction results.
 - Full `classify_ticket()` output.
+- Case-insensitive classification through the full ticket classification flow.
 - Successful `POST /classify` responses.
 - Missing required `text` input.
 
