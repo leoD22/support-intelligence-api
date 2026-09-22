@@ -7,14 +7,37 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      DB_USER: support_app
+      DB_PASSWORD: test_password
+      DB_HOST: localhost
+      DB_PORT: "5432"
+      DB_NAME: support_intelligence
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: support_app
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: support_intelligence   
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+
       - name: Prepare Python 3.10
         uses: actions/setup-python@v7
         with:
           python-version: '3.10'
+          
       - name: Install dependencies
         run: python -m pip install -r requirements.txt
+      
+      - name: Initialize database
+        run: python -m scripts.init_db
+
       - name: Run tests
         run: python -m pytest
+      
+     
