@@ -2,68 +2,139 @@
 
 API for classifying and processing support tickets.
 
-This API uses FastAPI and simple keyword-based rules to classify tickets. The response returns the fields `category`, `priority`, `summary`, and `entities`.
+This project evolves a support ticket classifier from a simple
+rule-based API into a backend application with persistence, testing, and
+future AI integration.
+
+Current implementation uses FastAPI and keyword-based classification
+rules. The API returns `category`, `priority`, `summary`, and
+`entities`.
+
+## Project status
+
+Current version: v0.2 (database persistence)
+
+Implemented:
+
+-   FastAPI API endpoints.
+-   Pydantic request and response schemas.
+-   Rule-based ticket classification.
+-   PostgreSQL persistence using SQLAlchemy.
+-   Ticket and prediction storage.
+-   Classification history endpoint.
+-   Automated tests with pytest.
+-   GitHub Actions CI for the test suite.
+
+## Architecture
+
+Current flow:
+
+    Client
+      |
+      v
+    FastAPI
+      |
+      +--> Classifier service
+      |
+      +--> Persistence service
+                |
+                v
+           SQLAlchemy
+                |
+                v
+           PostgreSQL
 
 ## Technologies
 
-- FastAPI: building the API endpoints.
-- Pydantic: definition and basic validation of input and output schemas.
-- Uvicorn: ASGI server used to run the application.
-- pytest: automated testing of classifier logic and API behavior.
-- FastAPI TestClient: testing the `/classify` endpoint without running the server manually.
-- GitHub Actions: continuous integration that runs the test suite on pushes and pull requests.
+-   FastAPI: API framework.
+-   Pydantic: request and response schemas.
+-   Uvicorn: ASGI server.
+-   SQLAlchemy: database access layer.
+-   PostgreSQL: persistence database.
+-   pytest: automated testing.
+-   FastAPI TestClient: API endpoint testing.
+-   GitHub Actions: continuous integration.
+
+## Project structure
+
+    app/
+    ├── database.py
+    ├── main.py
+    ├── schemas/
+    │   └── ticket.py
+    └── services/
+        ├── classifier.py
+        └── persistence.py
+
+    tests/
+    ├── test_api.py
+    ├── test_classifier.py
+    └── test_persistence.py
 
 ## How to run the project
 
-### First-time setup
+### Create virtual environment
 
-Create a virtual environment in the project folder:
-
-```bash
+``` bash
 python -m venv .venv
 ```
 
-Activate the virtual environment:
+Activate it:
 
-```bash
+``` bash
 source .venv/Scripts/activate
 ```
 
-Install the required dependencies:
+Install dependencies:
 
-```bash
+``` bash
 python -m pip install -r requirements.txt
 ```
 
-### Run the API
+## Database configuration
 
-With the virtual environment activated:
+The project uses PostgreSQL for persistence.
 
-```bash
+Configure:
+
+-   `DB_USER`
+-   `DB_PASSWORD`
+-   `DB_HOST`
+-   `DB_PORT`
+-   `DB_NAME`
+
+The initial database schema is currently managed through SQLAlchemy
+metadata.
+
+Database migrations with Alembic are planned as a future improvement.
+
+## Run the API
+
+``` bash
 uvicorn app.main:app --reload
 ```
 
-## Using the API
+Interactive documentation:
 
-### Interactive documentation
+    /docs
 
-With the server running, you can access `/docs`, where FastAPI displays the endpoint documentation and the input/output schemas.
+## API endpoints
 
 ### POST /classify
 
-Receives a JSON body with the `text` field and returns a JSON response with the ticket classification.
+Classifies a support ticket.
 
-#### Request body
+Example request:
 
-```json
+``` json
 {
   "text": "The user got an error during login"
 }
 ```
 
-#### Response body
+Example response:
 
-```json
+``` json
 {
   "category": "technical",
   "priority": 1,
@@ -75,28 +146,50 @@ Receives a JSON body with the `text` field and returns a JSON response with the 
 }
 ```
 
+### GET /history/{ticket_id}
+
+Returns stored classification history for a ticket.
+
 ## Testing
 
-With the virtual environment activated, run the test suite with:
+Run:
 
-```bash
+``` bash
 python -m pytest
 ```
 
-The test suite is also executed automatically by GitHub Actions on every push and pull request.
+Current coverage:
 
-The current test suite covers:
+-   Category classification:
+    -   technical
+    -   billing
+    -   general
+-   Entity extraction.
+-   Complete classifier behavior.
+-   API responses.
+-   Invalid requests.
+-   Persistence flow:
+    -   save classification;
+    -   retrieve stored data from PostgreSQL.
 
-- `technical`, `billing`, and `general` category classification.
-- Multiple and empty entity extraction results.
-- Full `classify_ticket()` output.
-- Case-insensitive classification through the full ticket classification flow.
-- Successful `POST /classify` responses.
-- Missing required `text` input.
+The test suite runs automatically through GitHub Actions on push and
+pull request.
 
-## Limitations
+Persistence integration tests currently require a PostgreSQL
+environment. Adding a PostgreSQL service to GitHub Actions is planned as
+a future improvement.
 
-- Classification currently relies on simple keyword-based rules. In future versions, the rule-based classifier will gradually be replaced by AI-based classification.
-- `summary` currently returns the input text, not an actual summary.
-- `entities` only detects a fixed list of words.
-- Advanced input validation is left for a future version.
+## Current limitations
+
+-   Classification still relies on keyword-based rules.
+-   Summary currently returns the original input text.
+-   Entity extraction uses a fixed keyword list.
+-   Advanced validation is not implemented yet.
+
+## Future improvements
+
+-   Replace rule-based classification with AI-based classification.
+-   Add Alembic database migrations.
+-   Add PostgreSQL service to CI for persistence integration tests.
+-   Add Docker support.
+-   Add LLM integration and evaluation.

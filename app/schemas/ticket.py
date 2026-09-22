@@ -10,3 +10,11 @@ class TicketResponse(BaseModel):
     priority: int
     summary: str
     entities: list[str]
+
+
+class ClassificationHistory(BaseModel):
+    text: str
+    category: str
+    priority: int
+    summary: str
+    entities: list[str]
