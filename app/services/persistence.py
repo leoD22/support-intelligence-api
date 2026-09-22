@@ -5,7 +5,7 @@ from app.database import engine, tickets, predictions
 
 def save_classification(
         text,
-        category,
+        category: str,
         priority: int,
         summary: str,
         entities: list[str]
@@ -54,7 +54,7 @@ def save_prediction(
 
 
 def get_classifications(ticket_id: int):
-    stmt = ( 
+    stmt = (
         select(
             tickets.c.text,
             predictions.c.category,
