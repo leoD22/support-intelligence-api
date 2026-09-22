@@ -1,9 +1,13 @@
 from fastapi import FastAPI
 
-from app.schemas.ticket import TicketRequest, TicketResponse
+from app.schemas.ticket import (
+    TicketRequest,
+    TicketResponse,
+    ClassificationHistory
+    )
 
 from app.services.classifier import classify_ticket
-from app.services.persistence import save_classification
+from app.services.persistence import save_classification, get_classifications
 
 
 app = FastAPI()
@@ -23,3 +27,8 @@ def classify(ticket: TicketRequest):
     )
 
     return result
+
+
+@app.get("/history/{ticket_id}", response_model=list[ClassificationHistory])
+def history(ticket_id: int):
+    return get_classifications(ticket_id)

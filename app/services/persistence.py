@@ -67,6 +67,6 @@ def get_classifications(ticket_id: int):
     )
 
     with engine.connect() as connection:
-        result = connection.execute(stmt).fetchall()
+        result = connection.execute(stmt).mappings().all()
 
     return result
