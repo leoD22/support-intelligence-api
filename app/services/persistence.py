@@ -1,4 +1,4 @@
-from sqlalchemy import insert
+from sqlalchemy import insert, select
 
 from app.database import engine, tickets, predictions
 
@@ -16,8 +16,8 @@ def save_classification(
             connection,
             ticket_id,
             category,
-            summary,
             priority,
+            summary,
             entities
         )
 
@@ -36,8 +36,8 @@ def save_prediction(
         connection,
         ticket_id: int,
         category: str,
-        summary: str,
         priority: int,
+        summary: str,
         entities: list[str]) -> None:
     stmt = (
         insert(predictions)
@@ -51,3 +51,22 @@ def save_prediction(
         )
 
     connection.execute(stmt)
+
+
+def get_classifications(ticket_id: int):
+    stmt = ( 
+        select(
+            tickets.c.text,
+            predictions.c.category,
+            predictions.c.priority,
+            predictions.c.summary,
+            predictions.c.entities
+        )
+        .join(predictions)
+        .where(tickets.c.id == ticket_id)
+    )
+
+    with engine.connect() as connection:
+        result = connection.execute(stmt).fetchall()
+
+    return result
