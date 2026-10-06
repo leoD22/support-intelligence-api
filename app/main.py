@@ -7,7 +7,10 @@ from app.schemas.ticket import (
     )
 
 from app.services.persistence import save_classification, get_classifications
-from app.services.llm_classifier import classify_ticket_with_llm, PROMPT_VERSION
+from app.services.llm_classifier import (
+    classify_ticket_with_llm,
+    PROMPT_VERSION
+    )
 
 app = FastAPI()
 

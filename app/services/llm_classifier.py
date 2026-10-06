@@ -1,7 +1,7 @@
 import json
 from app.services.openai_client import get_openai_client
 
-PROMPT_VERSION = 1
+PROMPT_VERSION = 2
 
 
 def classify_ticket_with_llm(text: str):
@@ -21,6 +21,7 @@ def classify_ticket_with_llm(text: str):
     - billing:
     issues related to payments, charges, invoices, refunds, pricing,
     subscriptions, or other financial matters.
+    Questions about prices, plans, or subscription costs are also billing.
 
     - technical:
     issues related to errors, bugs, login problems, system failures,
@@ -39,6 +40,8 @@ def classify_ticket_with_llm(text: str):
     low-impact questions, feedback, or non-urgent issues.
     - 2:
     problems affecting normal use without completely blocking the user.
+    A delayed or pending refund is priority 2 unless it also causes blocked access
+    or another critical issue.
     - 3:
     blocked access, an essential action being impossible, repeated or incorrect
     charges, or a serious system failure.

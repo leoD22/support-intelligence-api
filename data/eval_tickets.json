@@ -1,0 +1,124 @@
+[
+  {
+    "text": "I was charged twice for my monthly subscription",
+    "expected_category": "billing",
+    "expected_priority": 3
+  },
+  {
+    "text": "My invoice shows a higher amount than expected",
+    "expected_category": "billing",
+    "expected_priority": 3
+  },
+  {
+    "text": "I would like to know the price of the premium plan",
+    "expected_category": "billing",
+    "expected_priority": 1
+  },
+  {
+    "text": "I requested a refund last week but have not received it yet",
+    "expected_category": "billing",
+    "expected_priority": 2
+  },
+  {
+    "text": "The payment page shows an error every time I try to pay my invoice",
+    "expected_category": "billing",
+    "expected_priority": 3
+  },
+  {
+    "text": "My subscription was renewed even though I cancelled it",
+    "expected_category": "billing",
+    "expected_priority": 3
+  },
+  {
+    "text": "Can I change my subscription from monthly to yearly billing?",
+    "expected_category": "billing",
+    "expected_priority": 1
+  },
+  {
+    "text": "My credit card was charged but the subscription is still inactive",
+    "expected_category": "billing",
+    "expected_priority": 3
+  },
+
+  {
+    "text": "I get an error every time I try to login",
+    "expected_category": "technical",
+    "expected_priority": 3
+  },
+  {
+    "text": "The dashboard takes a long time to load",
+    "expected_category": "technical",
+    "expected_priority": 2
+  },
+  {
+    "text": "The export button does not work",
+    "expected_category": "technical",
+    "expected_priority": 2
+  },
+  {
+    "text": "The application crashes when I upload a file",
+    "expected_category": "technical",
+    "expected_priority": 2
+  },
+  {
+    "text": "I forgot my password and cannot access my account because the password reset link fails",
+    "expected_category": "technical",
+    "expected_priority": 3
+  },
+  {
+    "text": "Some images are not displayed correctly on the website",
+    "expected_category": "technical",
+    "expected_priority": 2
+  },
+  {
+    "text": "The search feature sometimes returns incorrect results",
+    "expected_category": "technical",
+    "expected_priority": 2
+  },
+  {
+    "text": "The notification icon appears in the wrong position",
+    "expected_category": "technical",
+    "expected_priority": 2
+  },
+
+  {
+    "text": "What are your business hours?",
+    "expected_category": "general",
+    "expected_priority": 1
+  },
+  {
+    "text": "I really like the new dashboard design",
+    "expected_category": "general",
+    "expected_priority": 1
+  },
+  {
+    "text": "Do you offer customer support on weekends?",
+    "expected_category": "general",
+    "expected_priority": 1
+  },
+  {
+    "text": "I would like to suggest adding a dark mode",
+    "expected_category": "general",
+    "expected_priority": 1
+  },
+  {
+    "text": "Where can I find the documentation?",
+    "expected_category": "general",
+    "expected_priority": 1
+  },
+  {
+    "text": "Can your product be used by small businesses?",
+    "expected_category": "general",
+    "expected_priority": 1
+  },
+  {
+    "text": "The website is confusing and I am not sure where to start",
+    "expected_category": "general",
+    "expected_priority": 1
+  },
+  {
+    "text": "I would like more information about the features included in your service",
+    "expected_category": "general",
+    "expected_priority": 1
+  }
+]
