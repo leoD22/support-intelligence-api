@@ -7,7 +7,7 @@ from app.schemas.ticket import (
     )
 
 from app.services.persistence import save_classification, get_classifications
-from app.services.llm_classifier import classify_ticket_with_llm
+from app.services.llm_classifier import classify_ticket_with_llm, PROMPT_VERSION
 
 app = FastAPI()
 
@@ -22,7 +22,8 @@ def classify(ticket: TicketRequest):
         result["category"],
         result["priority"],
         result["summary"],
-        result["entities"]
+        result["entities"],
+        PROMPT_VERSION
     )
 
     return result

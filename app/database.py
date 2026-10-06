@@ -56,5 +56,6 @@ predictions = Table(
     Column('category', String(255), nullable=False),
     Column('priority', Integer(), nullable=False),
     Column('summary', Text(), nullable=False),
-    Column('entities', JSON, nullable=False)
+    Column('entities', JSON, nullable=False),
+    Column('prompt_version', Integer(), nullable=False)
     )

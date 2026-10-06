@@ -1,6 +1,8 @@
 import json
 from app.services.openai_client import get_openai_client
 
+PROMPT_VERSION = 1
+
 
 def classify_ticket_with_llm(text: str):
     client = get_openai_client()

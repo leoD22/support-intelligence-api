@@ -8,7 +8,8 @@ def save_classification(
         category: str,
         priority: int,
         summary: str,
-        entities: list[str]
+        entities: list[str],
+        prompt_version: int
 ) -> int:
     with engine.begin() as connection:
         ticket_id = save_ticket(connection, text)
@@ -18,7 +19,8 @@ def save_classification(
             category,
             priority,
             summary,
-            entities
+            entities,
+            prompt_version
         )
 
     return ticket_id
@@ -38,7 +40,8 @@ def save_prediction(
         category: str,
         priority: int,
         summary: str,
-        entities: list[str]) -> None:
+        entities: list[str],
+        prompt_version: int) -> None:
     stmt = (
         insert(predictions)
         .values(
@@ -46,7 +49,8 @@ def save_prediction(
                 category=category,
                 priority=priority,
                 summary=summary,
-                entities=entities
+                entities=entities,
+                prompt_version=prompt_version
             )
         )
 
@@ -60,7 +64,8 @@ def get_classifications(ticket_id: int):
             predictions.c.category,
             predictions.c.priority,
             predictions.c.summary,
-            predictions.c.entities
+            predictions.c.entities,
+            predictions.c.prompt_version
         )
         .join(predictions)
         .where(tickets.c.id == ticket_id)
