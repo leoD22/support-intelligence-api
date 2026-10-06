@@ -6,9 +6,8 @@ from app.schemas.ticket import (
     ClassificationHistory
     )
 
-from app.services.classifier import classify_ticket
 from app.services.persistence import save_classification, get_classifications
-
+from app.services.llm_classifier import classify_ticket_with_llm
 
 app = FastAPI()
 
@@ -16,7 +15,7 @@ app = FastAPI()
 @app.post("/classify", response_model=TicketResponse)
 def classify(ticket: TicketRequest):
 
-    result = classify_ticket(ticket.text)
+    result = classify_ticket_with_llm(ticket.text)
 
     save_classification(
         ticket.text,

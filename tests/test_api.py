@@ -8,7 +8,20 @@ def client():
     return TestClient(app)
 
 
-def test_classify_normal(client):
+def test_classify_normal(client, monkeypatch):
+    def fake_classify(text):
+        return {
+            "category": "technical",
+            "priority": 1,
+            "summary": "The user got an error during login",
+            "entities": [
+                "error",
+                "login"
+            ]
+        }
+
+    monkeypatch.setattr("app.main.classify_ticket_with_llm", fake_classify)
+
     response = client.post(
         "/classify",
         json={
