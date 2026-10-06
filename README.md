@@ -227,8 +227,7 @@ The test suite runs automatically through GitHub Actions on push and
 pull request.
 
 Persistence integration tests currently require a PostgreSQL
-environment. Adding a PostgreSQL service to GitHub Actions is planned as
-a future improvement.
+environment.
 
 ## LLM evaluation
 
@@ -285,6 +284,5 @@ prediction.
 - Add stronger validation and fallback handling for malformed LLM output.
 - Expand the evaluation dataset.
 - Add more detailed evaluation metrics.
-- Add PostgreSQL service to CI for persistence integration tests.
 - Add Docker support.
 - Continue comparing new prompt versions against the evaluation baseline.
