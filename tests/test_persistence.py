@@ -1,5 +1,7 @@
 from app.services.persistence import save_classification, get_classifications
 
+example_prompt_version = 1
+
 
 def test_save_and_get():
     example_text = 'The user got an error during login'
@@ -13,7 +15,8 @@ def test_save_and_get():
         example_category,
         example_priority,
         example_summary,
-        example_entities
+        example_entities,
+        example_prompt_version
         )
 
     assert ticket_id > 0
@@ -30,3 +33,4 @@ def test_save_and_get():
     assert prediction["summary"] == example_summary
     assert prediction["entities"][0] == example_entities[0]
     assert prediction["entities"][1] == example_entities[1]
+    assert prediction["prompt_version"] == example_prompt_version
