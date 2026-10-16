@@ -1,5 +1,5 @@
-import json
 from app.services.openai_client import get_openai_client
+from app.schemas.ticket import TicketResponse
 
 PROMPT_VERSION = 2
 
@@ -40,8 +40,8 @@ def classify_ticket_with_llm(text: str):
     low-impact questions, feedback, or non-urgent issues.
     - 2:
     problems affecting normal use without completely blocking the user.
-    A delayed or pending refund is priority 2 unless it also causes blocked access
-    or another critical issue.
+    A delayed or pending refund is priority 2 unless it also causes blocked
+    access or another critical issue.
     - 3:
     blocked access, an essential action being impossible, repeated or incorrect
     charges, or a serious system failure.
@@ -67,16 +67,15 @@ def classify_ticket_with_llm(text: str):
     Do not include explanations, markdown, or any text outside the JSON.
     """
 
-    response = client.chat.completions.create(
+    response = client.responses.parse(
         model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": system_str},
-            {"role": "user", "content": text}
-        ],
-        max_completion_tokens=150,
-        temperature=0
+        instructions=system_str,
+        input=text,
+        max_output_tokens=150,
+        temperature=0,
+        text_format=TicketResponse
     )
 
-    result = json.loads(response.choices[0].message.content)
+    result = response.output_parsed.model_dump()
 
     return result
