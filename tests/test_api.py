@@ -1,7 +1,8 @@
 from fastapi.testclient import TestClient
 from app.main import app
 import pytest
-
+from app.schemas.ticket import TicketResponse
+from app.schemas.llm import LLMClassificationResult
 
 @pytest.fixture
 def client():
@@ -10,15 +11,22 @@ def client():
 
 def test_classify_normal(client, monkeypatch):
     def fake_classify(text):
-        return {
-            "category": "technical",
-            "priority": 1,
-            "summary": "The user got an error during login",
-            "entities": [
-                "error",
-                "login"
-            ]
-        }
+        return LLMClassificationResult(
+            classification=TicketResponse(
+                category="technical",
+                priority=1,
+                summary="The user got an error during login",
+                entities=[
+                    "error",
+                    "login"
+                ]
+            ),
+            model_name="test-model",
+            input_tokens=10,
+            output_tokens=5,
+            total_tokens=15,
+            latency_ms=100
+        )
 
     monkeypatch.setattr("app.main.classify_ticket_with_llm", fake_classify)
 

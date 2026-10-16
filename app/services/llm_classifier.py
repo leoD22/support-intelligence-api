@@ -1,10 +1,12 @@
+import time
 from app.services.openai_client import get_openai_client
 from app.schemas.ticket import TicketResponse
+from app.schemas.llm import LLMClassificationResult
 
 PROMPT_VERSION = 2
 
 
-def classify_ticket_with_llm(text: str):
+def classify_ticket_with_llm(text: str) -> LLMClassificationResult:
     client = get_openai_client()
     system_str = """
     You are a support ticket analyzer.
@@ -66,6 +68,7 @@ def classify_ticket_with_llm(text: str):
 
     Do not include explanations, markdown, or any text outside the JSON.
     """
+    start_time = time.perf_counter()
 
     response = client.responses.parse(
         model="gpt-4o-mini",
@@ -76,6 +79,17 @@ def classify_ticket_with_llm(text: str):
         text_format=TicketResponse
     )
 
-    result = response.output_parsed.model_dump()
+    end_time = time.perf_counter()
+
+    latency_ms = int((end_time - start_time) * 1000)
+
+    result = LLMClassificationResult(
+        classification=response.output_parsed,
+        model_name=response.model,
+        input_tokens=response.usage.input_tokens,
+        output_tokens=response.usage.output_tokens,
+        total_tokens=response.usage.total_tokens,
+        latency_ms=latency_ms
+    )
 
     return result

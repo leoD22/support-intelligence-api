@@ -21,15 +21,20 @@ def classify(ticket: TicketRequest):
     result = classify_ticket_with_llm(ticket.text)
 
     save_classification(
-        ticket.text,
-        result["category"],
-        result["priority"],
-        result["summary"],
-        result["entities"],
-        PROMPT_VERSION
+        text=ticket.text,
+        category=result.classification.category,
+        priority=result.classification.priority,
+        summary=result.classification.summary,
+        entities=result.classification.entities,
+        prompt_version=PROMPT_VERSION,
+        model_name=result.model_name,
+        input_tokens=result.input_tokens,
+        output_tokens=result.output_tokens,
+        total_tokens=result.total_tokens,
+        latency_ms=result.latency_ms
     )
 
-    return result
+    return result.classification
 
 
 @app.get("/history/{ticket_id}", response_model=list[ClassificationHistory])

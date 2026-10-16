@@ -57,5 +57,10 @@ predictions = Table(
     Column('priority', Integer(), nullable=False),
     Column('summary', Text(), nullable=False),
     Column('entities', JSON, nullable=False),
-    Column('prompt_version', Integer(), nullable=False)
+    Column('prompt_version', Integer(), nullable=False),
+    Column('model_name', String(255), nullable=True),
+    Column('input_tokens', Integer(), nullable=True),
+    Column('output_tokens', Integer(), nullable=True),
+    Column('total_tokens', Integer(), nullable=True),
+    Column('latency_ms', Integer(), nullable=True)
     )
