@@ -14,19 +14,19 @@ correct_priority = 0
 for ticket in tickets:
     result = classify_ticket_with_llm(ticket["text"])
 
-    if result["category"] == ticket["expected_category"]:
+    if result.classification.category == ticket["expected_category"]:
         correct_category += 1
     else:
         print(f'Text: {ticket["text"]}')
         print(f'Expected category: {ticket["expected_category"]}')
-        print(f'Actual category: {result["category"]}')
+        print(f'Actual category: {result.classification.category}')
 
-    if result["priority"] == ticket["expected_priority"]:
+    if result.classification.priority == ticket["expected_priority"]:
         correct_priority += 1
     else:
         print(f'Text: {ticket["text"]}')
         print(f'Expected priority: {ticket["expected_priority"]}')
-        print(f'Actual priority: {result["priority"]}')
+        print(f'Actual priority: {result.classification.priority}')
 
 category_accuracy = correct_category / len(tickets) * 100
 priority_accuracy = correct_priority / len(tickets) * 100
