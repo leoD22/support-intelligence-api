@@ -5,6 +5,11 @@ from app.schemas.ticket import TicketResponse
 from app.schemas.llm import LLMClassificationResult
 from app.services.pricing import calculate_cost
 
+
+class InvalidLLMResponseError(Exception):
+    pass
+
+
 PROMPT_VERSION = 2
 
 
@@ -80,6 +85,11 @@ def classify_ticket_with_llm(text: str) -> LLMClassificationResult:
         temperature=0,
         text_format=TicketResponse
     )
+
+    if response.output_parsed is None:
+        raise InvalidLLMResponseError(
+            "OpenAI returned no parsed classification"
+        )
 
     end_time = time.perf_counter()
 
