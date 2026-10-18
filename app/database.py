@@ -11,6 +11,9 @@ from sqlalchemy import (
     Text,
     ForeignKey,
     String,
+    Numeric,
+    DateTime,
+    func,
     create_engine
 )
 from sqlalchemy.engine import URL
@@ -46,8 +49,14 @@ metadata = MetaData()
 tickets = Table(
     'tickets', metadata,
     Column('id', Integer(), primary_key=True),
-    Column('text', Text(), nullable=False)
+    Column('text', Text(), nullable=False),
+    Column(
+        'created_at',
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now()
     )
+)
 
 predictions = Table(
     'predictions', metadata,
@@ -62,5 +71,12 @@ predictions = Table(
     Column('input_tokens', Integer(), nullable=True),
     Column('output_tokens', Integer(), nullable=True),
     Column('total_tokens', Integer(), nullable=True),
-    Column('latency_ms', Integer(), nullable=True)
+    Column('latency_ms', Integer(), nullable=True),
+    Column('cost_usd', Numeric(12, 10), nullable=True),
+    Column(
+        'created_at',
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now()
     )
+)

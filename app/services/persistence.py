@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from sqlalchemy import insert, select
 
 from app.database import engine, tickets, predictions
@@ -14,7 +16,8 @@ def save_classification(
         input_tokens: int | None = None,
         output_tokens: int | None = None,
         total_tokens: int | None = None,
-        latency_ms: int | None = None
+        latency_ms: int | None = None,
+        cost_usd: Decimal | None = None
 ) -> int:
     with engine.begin() as connection:
         ticket_id = save_ticket(connection, text)
@@ -30,7 +33,8 @@ def save_classification(
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             total_tokens=total_tokens,
-            latency_ms=latency_ms
+            latency_ms=latency_ms,
+            cost_usd=cost_usd
         )
 
     return ticket_id
@@ -56,7 +60,8 @@ def save_prediction(
         input_tokens: int | None = None,
         output_tokens: int | None = None,
         total_tokens: int | None = None,
-        latency_ms: int | None = None
+        latency_ms: int | None = None,
+        cost_usd: Decimal | None = None
 ) -> None:
     stmt = (
         insert(predictions)
@@ -71,7 +76,8 @@ def save_prediction(
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             total_tokens=total_tokens,
-            latency_ms=latency_ms
+            latency_ms=latency_ms,
+            cost_usd=cost_usd
         )
     )
 

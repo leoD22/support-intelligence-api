@@ -1,7 +1,9 @@
 import time
+
 from app.services.openai_client import get_openai_client
 from app.schemas.ticket import TicketResponse
 from app.schemas.llm import LLMClassificationResult
+from app.services.pricing import calculate_cost
 
 PROMPT_VERSION = 2
 
@@ -83,13 +85,20 @@ def classify_ticket_with_llm(text: str) -> LLMClassificationResult:
 
     latency_ms = int((end_time - start_time) * 1000)
 
+    cost_usd = calculate_cost(
+        response.model,
+        response.usage.input_tokens,
+        response.usage.output_tokens
+    )
+
     result = LLMClassificationResult(
         classification=response.output_parsed,
         model_name=response.model,
         input_tokens=response.usage.input_tokens,
         output_tokens=response.usage.output_tokens,
         total_tokens=response.usage.total_tokens,
-        latency_ms=latency_ms
+        latency_ms=latency_ms,
+        cost_usd=cost_usd
     )
 
     return result

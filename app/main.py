@@ -31,7 +31,8 @@ def classify(ticket: TicketRequest):
         input_tokens=result.input_tokens,
         output_tokens=result.output_tokens,
         total_tokens=result.total_tokens,
-        latency_ms=result.latency_ms
+        latency_ms=result.latency_ms,
+        cost_usd=result.cost_usd
     )
 
     return result.classification
