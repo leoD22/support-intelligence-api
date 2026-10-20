@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 from app.schemas.ticket import (
     TicketRequest,
@@ -14,6 +14,8 @@ from app.services.llm_classifier import (
 )
 from app.services.classifier import classify_ticket
 from openai import APIConnectionError, RateLimitError, InternalServerError
+from app.schemas.assistant import AssistantRequest, AssistantResponse
+from app.services.ticket_assistant import ask_about_ticket
 
 
 app = FastAPI()
@@ -57,3 +59,17 @@ def classify(ticket: TicketRequest):
 @app.get("/history/{ticket_id}", response_model=list[ClassificationHistory])
 def history(ticket_id: int):
     return get_classifications(ticket_id)
+
+
+@app.post("/assistant/ask", response_model=AssistantResponse)
+def ask_assistant(request: AssistantRequest):
+    try:
+        response = ask_about_ticket(request.question)
+    except (APIConnectionError, RateLimitError, InternalServerError) as e:
+        raise HTTPException(
+            status_code=503,
+            detail="Assistant temporarily unavailable"
+        ) from e
+
+    answer = AssistantResponse(answer=response.output_text)
+    return answer
