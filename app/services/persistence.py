@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from sqlalchemy import insert, select
 
 from app.database import engine, tickets, predictions
@@ -9,18 +11,30 @@ def save_classification(
         priority: int,
         summary: str,
         entities: list[str],
-        prompt_version: int
+        prompt_version: int,
+        model_name: str | None = None,
+        input_tokens: int | None = None,
+        output_tokens: int | None = None,
+        total_tokens: int | None = None,
+        latency_ms: int | None = None,
+        cost_usd: Decimal | None = None
 ) -> int:
     with engine.begin() as connection:
         ticket_id = save_ticket(connection, text)
         save_prediction(
-            connection,
-            ticket_id,
-            category,
-            priority,
-            summary,
-            entities,
-            prompt_version
+            connection=connection,
+            ticket_id=ticket_id,
+            category=category,
+            priority=priority,
+            summary=summary,
+            entities=entities,
+            prompt_version=prompt_version,
+            model_name=model_name,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            total_tokens=total_tokens,
+            latency_ms=latency_ms,
+            cost_usd=cost_usd
         )
 
     return ticket_id
@@ -41,18 +55,31 @@ def save_prediction(
         priority: int,
         summary: str,
         entities: list[str],
-        prompt_version: int) -> None:
+        prompt_version: int,
+        model_name: str | None = None,
+        input_tokens: int | None = None,
+        output_tokens: int | None = None,
+        total_tokens: int | None = None,
+        latency_ms: int | None = None,
+        cost_usd: Decimal | None = None
+) -> None:
     stmt = (
         insert(predictions)
         .values(
-                ticket_id=ticket_id,
-                category=category,
-                priority=priority,
-                summary=summary,
-                entities=entities,
-                prompt_version=prompt_version
-            )
+            ticket_id=ticket_id,
+            category=category,
+            priority=priority,
+            summary=summary,
+            entities=entities,
+            prompt_version=prompt_version,
+            model_name=model_name,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            total_tokens=total_tokens,
+            latency_ms=latency_ms,
+            cost_usd=cost_usd
         )
+    )
 
     connection.execute(stmt)
 
