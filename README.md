@@ -33,7 +33,7 @@ The assistant currently supports one round of tool execution, not a general-purp
 
 ## Tech stack
 
-Python 3.10, FastAPI, Pydantic, OpenAI Responses API, PostgreSQL, SQLAlchemy Core, Alembic, pytest, and Flake8. A GitHub Actions workflow runs the automated test suite.
+Python 3.10, FastAPI, Pydantic, OpenAI Responses API, PostgreSQL, SQLAlchemy Core, Alembic, Docker, pytest, and Flake8. A GitHub Actions workflow runs the automated test suite.
 
 ## Project structure
 
@@ -56,6 +56,8 @@ alembic/versions/       # Database migrations
 scripts/evaluate_llm.py
 data/eval_tickets.json
 tests/
+Dockerfile              # Docker image for the FastAPI application
+.dockerignore           # Files excluded from the Docker build context
 ```
 
 ## Running locally
@@ -104,6 +106,51 @@ uvicorn app.main:app --reload
 ```
 
 Open [Swagger UI](http://127.0.0.1:8000/docs) to try the endpoints. Keep the server bound to localhost: the current API has no user authentication or ticket-level authorization.
+
+## Running with Docker
+
+The Docker image packages the FastAPI application and its Python dependencies. **PostgreSQL runs separately** and must be available before starting the container. Docker Compose is not part of this setup.
+
+### Prerequisites
+
+- Docker Desktop (or a compatible Docker Engine).
+- An accessible PostgreSQL instance with the required database and migrations applied.
+- An `.env` file containing the variables listed in [Running locally](#running-locally), including `OPENAI_API_KEY` for LLM-powered endpoints. Use `.env.example` as a reference.
+
+Keep `.env` out of Git. The Docker build excludes it from the image; environment variables are supplied when starting the container.
+
+The current image does not contain `alembic.ini` or `alembic/`. Create the database and run `python -m alembic upgrade head` from the local Python environment before using Docker with a new database.
+
+### Build the image
+
+From the repository root:
+
+```bash
+docker build -t support-intelligence-api:docker-test .
+```
+
+### Run the container
+
+The following example was verified on Windows with Docker Desktop and PostgreSQL running on the host. Run it from the repository root in Bash or Git Bash:
+
+```bash
+docker run --rm \
+  --name support-api-test \
+  -p 127.0.0.1:8000:8000 \
+  --env-file .env \
+  -e DB_HOST=host.docker.internal \
+  support-intelligence-api:docker-test
+```
+
+`--env-file .env` supplies the application settings at runtime. `DB_HOST=host.docker.internal` overrides the database hostname for this container so it can reach PostgreSQL on the Windows host. If PostgreSQL runs elsewhere, use its reachable hostname instead. The port mapping binds the API to the host's loopback interface rather than exposing it on all network interfaces.
+
+Stop the container with Ctrl+C. The `--rm` option removes it after it stops. Do not publish this API on the public Internet: user authentication, ticket-level authorization, and request rate limiting are not yet implemented.
+
+### Verify the API
+
+Open [Swagger UI](http://127.0.0.1:8000/docs) and try `GET /history/{ticket_id}` with an existing test ticket to check the connection to PostgreSQL. This was verified manually with HTTP 200 and the expected classification history.
+
+The automated suite is currently run from the local Python environment (see [Tests and evaluation](#tests-and-evaluation)); the Docker runtime image does not include the test suite.
 
 ## API
 
@@ -178,6 +225,6 @@ python -m scripts.evaluate_llm
 - **Limited fallback:** only selected LLM failures fall back to the rule-based classifier; database and other application errors are separate.
 - **Error handling:** invalid assistant tool arguments are not yet mapped to a dedicated HTTP error response.
 - **Evaluation:** the labeled dataset is small and needs to grow before drawing broader conclusions.
-- **Deployment:** Docker packaging, production monitoring, and deployment are not implemented yet.
+- **Deployment:** Docker packaging is available for local use. Docker Compose, cloud deployment, and production monitoring are not implemented yet.
 
 Development work is tested locally and reviewed before being merged into the main branch.
