@@ -65,6 +65,24 @@ def test_classify_missing_text(client):
     assert response.status_code == 422
 
 
+def test_classify_empty_text(client):
+    response = client.post("/classify", json={"text": ""})
+    assert response.status_code == 422
+
+
+def test_classify_whitespace_only_text(client, monkeypatch):
+    mock_classifier = Mock()
+    mock_save = Mock()
+    monkeypatch.setattr("app.main.classify_ticket_with_llm", mock_classifier)
+    monkeypatch.setattr("app.main.save_classification", mock_save)
+
+    response = client.post("/classify", json={"text": "   "})
+
+    assert response.status_code == 422
+    mock_classifier.assert_not_called()
+    mock_save.assert_not_called()
+
+
 def test_classify_fallback(client, monkeypatch):
     request = httpx2.Request("POST", "https://api.openai.com/v1/responses")
     values = {}
