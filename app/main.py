@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 
 from app.schemas.ticket import (
     TicketRequest,
@@ -16,12 +16,17 @@ from app.services.classifier import classify_ticket
 from openai import APIConnectionError, RateLimitError, InternalServerError
 from app.schemas.assistant import AssistantRequest, AssistantResponse
 from app.services.ticket_assistant import ask_about_ticket
+from app.security import verify_api_key
 
 
 app = FastAPI()
 
 
-@app.post("/classify", response_model=TicketResponse)
+@app.post(
+    "/classify",
+    response_model=TicketResponse,
+    dependencies=[Depends(verify_api_key)]
+)
 def classify(ticket: TicketRequest):
     classification: TicketResponse
     errors = (
@@ -56,12 +61,20 @@ def classify(ticket: TicketRequest):
     return classification
 
 
-@app.get("/history/{ticket_id}", response_model=list[ClassificationHistory])
+@app.get(
+    "/history/{ticket_id}",
+    response_model=list[ClassificationHistory],
+    dependencies=[Depends(verify_api_key)]
+)
 def history(ticket_id: int):
     return get_classifications(ticket_id)
 
 
-@app.post("/assistant/ask", response_model=AssistantResponse)
+@app.post(
+    "/assistant/ask",
+    response_model=AssistantResponse,
+    dependencies=[Depends(verify_api_key)]
+)
 def ask_assistant(request: AssistantRequest):
     try:
         response = ask_about_ticket(request.question)
