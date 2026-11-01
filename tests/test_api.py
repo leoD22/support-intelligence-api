@@ -20,7 +20,13 @@ def client():
     return TestClient(app)
 
 
-def test_classify_normal(client, monkeypatch):
+@pytest.fixture
+def auth_headers(monkeypatch):
+    monkeypatch.setattr("app.security.API_ACCESS_KEY", "test_secret")
+    return {"X-API-Key": "test_secret"}
+
+
+def test_classify_normal(client, monkeypatch, auth_headers):
     def fake_classify(text):
         return LLMClassificationResult(
             classification=TicketResponse(
@@ -45,8 +51,10 @@ def test_classify_normal(client, monkeypatch):
         "/classify",
         json={
             "text": "The user got an error during login"
-        }
+        },
+        headers=auth_headers
     )
+
     expected_response = {
         "category": "technical",
         "priority": 1,
@@ -60,30 +68,43 @@ def test_classify_normal(client, monkeypatch):
     assert response.json() == expected_response
 
 
-def test_classify_missing_text(client):
-    response = client.post("/classify", json={})
+def test_classify_missing_text(client, auth_headers):
+    response = client.post(
+        "/classify",
+        json={},
+        headers=auth_headers
+    )
+
     assert response.status_code == 422
 
 
-def test_classify_empty_text(client):
-    response = client.post("/classify", json={"text": ""})
+def test_classify_empty_text(client, auth_headers):
+    response = client.post(
+        "/classify",
+        json={"text": ""},
+        headers=auth_headers
+    )
     assert response.status_code == 422
 
 
-def test_classify_whitespace_only_text(client, monkeypatch):
+def test_classify_whitespace_only_text(client, monkeypatch, auth_headers):
     mock_classifier = Mock()
     mock_save = Mock()
     monkeypatch.setattr("app.main.classify_ticket_with_llm", mock_classifier)
     monkeypatch.setattr("app.main.save_classification", mock_save)
 
-    response = client.post("/classify", json={"text": "   "})
+    response = client.post(
+        "/classify",
+        json={"text": "   "},
+        headers=auth_headers
+    )
 
     assert response.status_code == 422
     mock_classifier.assert_not_called()
     mock_save.assert_not_called()
 
 
-def test_classify_fallback(client, monkeypatch):
+def test_classify_fallback(client, monkeypatch, auth_headers):
     request = httpx2.Request("POST", "https://api.openai.com/v1/responses")
     values = {}
 
@@ -106,7 +127,8 @@ def test_classify_fallback(client, monkeypatch):
         "/classify",
         json={
             "text": "The user got an error during login"
-        }
+        },
+        headers=auth_headers
     )
 
     expected_response = {
@@ -130,7 +152,7 @@ def test_classify_fallback(client, monkeypatch):
     assert values["latency_ms"] is None
 
 
-def test_classify_invalid_llm_response(client, monkeypatch):
+def test_classify_invalid_llm_response(client, monkeypatch, auth_headers):
     values = {}
 
     def fake_classify(text):
@@ -151,7 +173,8 @@ def test_classify_invalid_llm_response(client, monkeypatch):
         "/classify",
         json={
             "text": "The user got an error during login"
-        }
+        },
+        headers=auth_headers
     )
 
     expected_response = {
@@ -175,7 +198,8 @@ def test_classify_invalid_llm_response(client, monkeypatch):
     assert values["latency_ms"] is None
 
 
-def test_ask_assistant_success(client, monkeypatch):
+def test_ask_assistant_success(client, monkeypatch, auth_headers):
+
     monkeypatch.setattr(
         'app.main.ask_about_ticket',
         lambda question: fake_response
@@ -185,7 +209,8 @@ def test_ask_assistant_success(client, monkeypatch):
         "/assistant/ask",
         json={
             "question": "What is the history of ticket 42?"
-        }
+        },
+        headers=auth_headers
     )
 
     expected_response = {
@@ -204,9 +229,10 @@ def test_ask_assistant_success(client, monkeypatch):
         {"question": "   "}
     ]
 )
-def test_ask_assistant_invalid_question(client, monkeypatch, payload):
+def test_ask_assistant_invalid_question(
+    client, monkeypatch, auth_headers, payload
+):
     fake_ask_about_ticket = Mock()
-
     monkeypatch.setattr(
         'app.main.ask_about_ticket',
         fake_ask_about_ticket
@@ -214,14 +240,15 @@ def test_ask_assistant_invalid_question(client, monkeypatch, payload):
 
     response = client.post(
         "/assistant/ask",
-        json=payload
+        json=payload,
+        headers=auth_headers
     )
 
     assert response.status_code == 422
     fake_ask_about_ticket.assert_not_called()
 
 
-def test_ask_assistant_connection_error(client, monkeypatch):
+def test_ask_assistant_connection_error(client, monkeypatch, auth_headers):
     request = httpx2.Request("POST", "https://api.openai.com/v1/responses")
 
     def fake_ask_about_ticket(text):
@@ -239,10 +266,79 @@ def test_ask_assistant_connection_error(client, monkeypatch):
         "/assistant/ask",
         json={
             "question": "Describe the ticket 12"
-        }
+        },
+        headers=auth_headers
     )
 
     assert response.status_code == 503
     assert response.json() == {
         "detail": "Assistant temporarily unavailable"
     }
+
+
+def test_classify_rejects_missing_api_key(client, monkeypatch):
+    monkeypatch.setattr("app.security.API_ACCESS_KEY", "test_secret")
+
+    response = client.post(
+        "/classify",
+        json={
+            "text": "The user got an error during login"
+        }
+    )
+
+    assert response.status_code == 403
+
+
+def test_classify_rejects_invalid_api_key(client, monkeypatch):
+    monkeypatch.setattr("app.security.API_ACCESS_KEY", "test_secret")
+
+    response = client.post(
+        "/classify",
+        json={
+            "text": "The user got an error during login"
+        },
+        headers={"X-API-Key": "wrong_secret"}
+    )
+
+    assert response.status_code == 403
+
+
+def test_history_rejects_missing_api_key(client, monkeypatch):
+    monkeypatch.setattr("app.security.API_ACCESS_KEY", "test_secret")
+    mock_get_classifications = Mock()
+    monkeypatch.setattr("app.main.get_classifications", mock_get_classifications)
+
+    response = client.get("/history/42")
+
+    assert response.status_code == 403
+    mock_get_classifications.assert_not_called()
+
+
+def test_history_accepts_valid_api_key(client, monkeypatch, auth_headers):
+    mock_get_classifications = Mock(return_value=[])
+    monkeypatch.setattr("app.main.get_classifications", mock_get_classifications)
+
+    response = client.get(
+        "/history/42",
+        headers=auth_headers
+    )
+
+    assert response.status_code == 200
+    assert response.json() == []
+    mock_get_classifications.assert_called_once_with(42)
+
+
+def test_ask_assistant_rejects_missing_api_key(client, monkeypatch):
+    monkeypatch.setattr("app.security.API_ACCESS_KEY", "test_secret")
+    mock_ask_about_ticket = Mock()
+    monkeypatch.setattr("app.main.ask_about_ticket", mock_ask_about_ticket)
+
+    response = client.post(
+        "/assistant/ask",
+        json={
+            "question": "Describe the ticket 12"
+        }
+    )
+
+    assert response.status_code == 403
+    mock_ask_about_ticket.assert_not_called()
