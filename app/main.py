@@ -17,6 +17,10 @@ from openai import APIConnectionError, RateLimitError, InternalServerError
 from app.schemas.assistant import AssistantRequest, AssistantResponse
 from app.services.ticket_assistant import ask_about_ticket
 from app.security import verify_api_key
+from app.database import engine
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+from fastapi.responses import JSONResponse
 
 
 app = FastAPI()
@@ -86,3 +90,24 @@ def ask_assistant(request: AssistantRequest):
 
     answer = AssistantResponse(answer=response.output_text)
     return answer
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+
+@app.get("/ready")
+def readiness_check():
+    stmt = text("SELECT 1")
+    try:
+        with engine.connect() as connection:
+            connection.execute(stmt)
+    except SQLAlchemyError:
+        context = {"status": "not ready"}
+        return JSONResponse(
+            content=context,
+            status_code=503
+        )
+
+    return {"status": "ready"}
