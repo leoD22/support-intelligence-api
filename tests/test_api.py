@@ -7,7 +7,8 @@ from openai import APIConnectionError
 import httpx2
 from app.services.llm_classifier import InvalidLLMResponseError
 from types import SimpleNamespace
-from unittest.mock import Mock
+from unittest.mock import Mock, MagicMock
+from sqlalchemy.exc import SQLAlchemyError
 
 
 fake_response = SimpleNamespace(
@@ -342,3 +343,30 @@ def test_ask_assistant_rejects_missing_api_key(client, monkeypatch):
 
     assert response.status_code == 403
     mock_ask_about_ticket.assert_not_called()
+
+
+def test_health_check(client):
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
+def test_readiness_check_returns_ready_status(client, monkeypatch):
+    fake_engine = MagicMock()
+    monkeypatch.setattr("app.main.engine", fake_engine)
+    response = client.get("/ready")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ready"}
+    fake_engine.connect.assert_called_once_with()
+
+
+def test_readiness_check_returns_not_ready_status(client, monkeypatch):
+    fake_engine = MagicMock()
+    fake_engine.connect.side_effect = SQLAlchemyError(
+        "Database connection failed"
+    )
+    monkeypatch.setattr("app.main.engine", fake_engine)
+
+    response = client.get("/ready")
+    assert response.status_code == 503
+    assert response.json() == {"status": "not ready"}

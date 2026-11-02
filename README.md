@@ -13,11 +13,12 @@ The project started with a rule-based classifier. The current implementation add
 - **Read classification history:** retrieve stored predictions by ticket ID.
 - **Answer questions about tickets:** let the model request `get_ticket_history(ticket_id)`, execute that lookup in Python, and return the result for a final answer.
 - **Require an API key:** protect the three application endpoints with a shared `X-API-Key` header.
+- **Check service availability:** expose public liveness (`/health`) and PostgreSQL readiness (`/ready`) endpoints.
 
 ### Request flow
 
 ```text
-HTTP request
+Application endpoint request
     -> X-API-Key verification
     -> request validation
     -> endpoint handler
@@ -195,6 +196,8 @@ The server compares the supplied value with `API_ACCESS_KEY` from its environmen
 
 The key is **shared by trusted API consumers**. This first version does not have user identities or tenant-specific permissions. In particular, possession of the key permits access to the available ticket history; it does **not** establish ownership of any individual ticket.
 
+The `/health` and `/ready` operational endpoints do not require an API key.
+
 An example classification request using Bash/Git Bash (replace the placeholder with your local key):
 
 ```bash
@@ -246,6 +249,17 @@ The ticket ID above is only an example; its history is not part of the repositor
 
 The `question` field is required and trimmed of surrounding whitespace. Missing, empty, or whitespace-only questions return HTTP 422 for authenticated requests. Selected OpenAI availability failures return HTTP 503.
 
+### `GET /health`
+
+Liveness check. Returns HTTP 200 with `{"status": "ok"}` while the API can respond to requests. It does not check PostgreSQL or OpenAI availability. No API key is required.
+
+### `GET /ready`
+
+Readiness check. Runs a minimal `SELECT 1` query against PostgreSQL to verify that the database is reachable. No API key is required.
+
+- **200 OK:** `{"status": "ready"}` when the database check succeeds.
+- **503 Service Unavailable:** `{"status": "not ready"}` when SQLAlchemy reports a database error.
+
 ## Tests and evaluation
 
 Run the tests without making real LLM API calls:
@@ -254,7 +268,7 @@ Run the tests without making real LLM API calls:
 python -m pytest -q
 ```
 
-The last locally confirmed run on `feature/api-key-auth` passed **52 tests**. Tests cover classification, input validation, API key authentication, API error handling, database persistence, pricing, and tool-calling behavior. Some persistence tests need a local PostgreSQL instance.
+The last locally confirmed run on `feature/health-readiness` passed **55 tests**. Tests cover classification, input validation, API key authentication, API error handling, health and readiness checks, database persistence, pricing, and tool-calling behavior. Some persistence tests need a local PostgreSQL instance.
 
 The authentication tests include direct checks of `verify_api_key()` and HTTP checks for protected routes. A pytest fixture provides a valid API key for regular endpoint tests, while negative authentication tests intentionally send a missing or incorrect key.
 
