@@ -178,6 +178,20 @@ The automated suite is currently run from the local Python environment (see [Tes
 
 ## API
 
+### Request Logging
+
+The API includes HTTP middleware that logs the request method,
+route template, response status code, and processing time in milliseconds.
+
+Logs use Uvicorn's logger at the INFO level.
+
+The custom middleware does not log request bodies, API keys,
+query strings, or actual route parameter values. Parameterized
+routes use their templates (e.g., `/history/{ticket_id}`).
+
+Uvicorn's standard access logs are separate and may include
+original request paths.
+
 ### Authentication
 
 All three application endpoints require the following request header:
@@ -268,7 +282,10 @@ Run the tests without making real LLM API calls:
 python -m pytest -q
 ```
 
-The last locally confirmed run on `feature/health-readiness` passed **55 tests**. Tests cover classification, input validation, API key authentication, API error handling, health and readiness checks, database persistence, pricing, and tool-calling behavior. Some persistence tests need a local PostgreSQL instance.
+The last locally confirmed run on `feature/request-logging`
+passed **58 tests**. The suite includes three HTTP middleware
+logging tests covering successful requests, unmatched routes,
+and authentication failures.
 
 The authentication tests include direct checks of `verify_api_key()` and HTTP checks for protected routes. A pytest fixture provides a valid API key for regular endpoint tests, while negative authentication tests intentionally send a missing or incorrect key.
 

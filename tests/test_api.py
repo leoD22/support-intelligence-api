@@ -370,3 +370,41 @@ def test_readiness_check_returns_not_ready_status(client, monkeypatch):
     response = client.get("/ready")
     assert response.status_code == 503
     assert response.json() == {"status": "not ready"}
+
+
+def test_request_logging_success(client, monkeypatch):
+    mock_logger = Mock()
+    monkeypatch.setattr("app.main.logger.info", mock_logger)
+
+    response = client.get("/health")
+    message = mock_logger.call_args.args[0]
+
+    assert "GET /health 200" in message
+    assert response.status_code == 200
+    mock_logger.assert_called_once()
+
+
+def test_request_logging_not_found(client, monkeypatch):
+    mock_logger = Mock()
+    monkeypatch.setattr("app.main.logger.info", mock_logger)
+
+    response = client.get("/missing")
+    message = mock_logger.call_args.args[0]
+
+    assert response.status_code == 404
+    assert "GET <unmatched> 404" in message
+    mock_logger.assert_called_once()
+
+
+def test_request_logging_auth_failure(client, monkeypatch):
+    mock_logger = Mock()
+    monkeypatch.setattr("app.main.logger.info", mock_logger)
+    monkeypatch.setattr("app.security.API_ACCESS_KEY", "test_secret")
+
+    response = client.get("/history/42")
+    message = mock_logger.call_args.args[0]
+
+    assert response.status_code == 403
+    assert "GET /history/{ticket_id} 403" in message
+    assert "/history/42" not in message
+    mock_logger.assert_called_once()
