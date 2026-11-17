@@ -1,4 +1,6 @@
-from fastapi import FastAPI, HTTPException, Depends
+import time
+import logging
+from fastapi import FastAPI, HTTPException, Depends, Request
 
 from app.schemas.ticket import (
     TicketRequest,
@@ -23,6 +25,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from fastapi.responses import JSONResponse
 
 
+logger = logging.getLogger('uvicorn.error')
 app = FastAPI()
 
 
@@ -111,3 +114,17 @@ def readiness_check():
         )
 
     return {"status": "ready"}
+
+
+@app.middleware("http")
+async def request_logging_middleware(request: Request, call_next):
+    start_time = time.perf_counter()
+    response = await call_next(request)
+    end_time = time.perf_counter()
+    route = request.scope.get("route")
+    route_path = route.path if route is not None else "<unmatched>"
+    elapsed_time = (end_time - start_time) * 1000
+    logger.info(
+        f"Request: {request.method} {route_path} {response.status_code} {elapsed_time:.2f} ms"
+    )
+    return response
