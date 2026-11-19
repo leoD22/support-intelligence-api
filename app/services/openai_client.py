@@ -10,5 +10,10 @@ def get_openai_client():
     if not openai_api_key:
         raise RuntimeError("Empty API KEY")
 
-    client = OpenAI(api_key=openai_api_key)
+    client = OpenAI(
+        api_key=openai_api_key,
+        timeout=30.0,
+        max_retries=1
+    )
+
     return client
